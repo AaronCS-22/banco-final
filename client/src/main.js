@@ -133,22 +133,10 @@ const cargarCuentas = async () => {
     if (!response.ok) throw new Error("Error al cargar las cuentas");
     
     const cuentas = await response.json(); // Convertimos la respuesta a JSON
-    createUsernames(cuentas); // Agregamos los usernames
     console.log(cuentas); // Mostramos las cuentas en consola
   } catch (error) {
     console.error("Error:", error.message);
   }
-};
-
-cargarCuentas(); // Ejecutamos la función para obtener las cuentas
-const createUsernames = function (accounts) {
-  accounts.forEach(function (account) {
-    account.username = account.owner // Juan Sanchez
-      .toLowerCase() //  juan sanchez
-      .split(" ") // ['juan', 'sanchez']
-      .map((name) => name[0]) // ['j', 's']
-      .join(""); // js
-  });
 };
 
 // ----------------------------------------------- login -----------------------------------------------

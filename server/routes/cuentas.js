@@ -36,7 +36,20 @@ function generarCuentasBancarias(cant) {
   return cuentas;
 }
 
+// Genera las cuentas
 const cuentasGeneradas = generarCuentasBancarias(cuentasTotales);
+
+// Función para crear usernames
+function createUsernames(accounts) {
+  accounts.forEach(function (account) {
+    account.username = account.owner
+      .toLowerCase()
+      .split(" ")
+      .map((name) => name[0])
+      .join("");
+  });
+}
+createUsernames(cuentasGeneradas);
 
 // ------------------------------------------ Ruta GET ------------------------------------------
 router.get('/cuentas', (req, res) => {
