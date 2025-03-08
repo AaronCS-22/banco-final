@@ -1,5 +1,4 @@
 import "./style.css";
-import cuentasGeneradas from "./generarCuentas.js";
 
 document.querySelector("#app").innerHTML = `
     <nav>
@@ -128,6 +127,20 @@ let isSortedAsc = true;
 // ----------------------------------------------- createUsernames -----------------------------------------------
 // Creamos el campo username para todas las cuentas de usuarios
 // Usamos forEach para modificar el array original, en otro caso map
+const cargarCuentas = async () => {
+  try {
+    const response = await fetch("http://localhost:5000/cuentas"); // Petición al backend
+    if (!response.ok) throw new Error("Error al cargar las cuentas");
+    
+    const cuentas = await response.json(); // Convertimos la respuesta a JSON
+    createUsernames(cuentas); // Agregamos los usernames
+    console.log(cuentas); // Mostramos las cuentas en consola
+  } catch (error) {
+    console.error("Error:", error.message);
+  }
+};
+
+cargarCuentas(); // Ejecutamos la función para obtener las cuentas
 const createUsernames = function (accounts) {
   accounts.forEach(function (account) {
     account.username = account.owner // Juan Sanchez
@@ -137,8 +150,6 @@ const createUsernames = function (accounts) {
       .join(""); // js
   });
 };
-
-createUsernames(cuentasGeneradas);
 
 // ----------------------------------------------- login -----------------------------------------------
 btnLogin.addEventListener("click", function (e) {
