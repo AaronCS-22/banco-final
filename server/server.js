@@ -5,16 +5,20 @@ require("dotenv").config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
+// ------------------------------------------ Middleware ------------------------------------------
 app.use(cors());
 app.use(express.json());
 
-// Ruta principal
+// ------------------------------------------ Rutas ------------------------------------------
+// Página principal
 app.get("/", (req, res) => {
   res.send("¡La API está funcionando!");
 });
 
-// Iniciar el servidor
+// Importación de /routes/cuentas
+app.use('/', require('./routes/cuentas'));
+
+// ------------------------------------------ Inicialización ------------------------------------------
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
