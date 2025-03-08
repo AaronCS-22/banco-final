@@ -36,9 +36,10 @@ function generarCuentasBancarias(cant) {
   return cuentas;
 }
 
+const cuentasGeneradas = generarCuentasBancarias(cuentasTotales);
+
 // ------------------------------------------ Ruta GET ------------------------------------------
 router.get('/cuentas', (req, res) => {
-  const cuentasGeneradas = generarCuentasBancarias(cuentasTotales);
   res.json(cuentasGeneradas);
 });
 
