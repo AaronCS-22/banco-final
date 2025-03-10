@@ -265,7 +265,6 @@ const displayBalance = function (movements) {
   labelBalance.textContent = `${balance.toFixed(2)} €`;
 };
 
-
 const displaySummary = function (movements) {
   let incomes = 0;
   let outflows = 0;
@@ -332,65 +331,43 @@ function formatRelativeDate(date) {
 
 // ----------------------------------------------- transfer -----------------------------------------------
 
-btnTransfer.addEventListener("click", function (e) {
-  // Evitamos que el formulario se envíe
+btnTransfer.addEventListener("click", async function (e) {
   e.preventDefault();
-  // Se obtiene la cantidad y el nombre de usuario al que se quiere hacer la transferencia
   const amount = Number(inputTransferAmount.value);
   const transferUsername = inputTransferTo.value.trim();
-  // Buscar la cuenta del receptor usando el username (iniciales)
-  const transferAccount = cuentasGeneradas.find(
-    (account) => account.username === transferUsername
-  );
-  // Obtener la cuenta actual del usuario autenticado
-  const transferCurrentAccount = cuentasGeneradas.find(
-    (account) => account.username === currentAccount.username
-  );
-  // Verificar si la cuenta del receptor existe
-  if (!transferAccount) {
-    // Mostrar un mensaje de error
-    alert("El nombre de usuario del receptor no es válido.");
-    return;
-  }
-  // Verificar si la cuenta actual existe
-  if (!transferCurrentAccount) {
-    // Mostrar un mensaje de error
-    alert("Hubo un problema con tu cuenta.");
-    return;
-  }
-  // Calcular el saldo del remitente (sumando los movimientos)
-  const currentBalance = transferCurrentAccount.movements.reduce(
-    (acc, mov) => acc + mov.amount,
-    0
-  );
-  // Verificar las condiciones para la transferencia
-  if (
-    amount > 0 &&
-    currentBalance >= amount &&
-    transferAccount.username !== transferCurrentAccount.username
-  ) {
-    // Crear los objetos de movimiento para ambas cuentas
-    const currentDate = new Date();
-    const movementSender = {
-      amount: -amount,
-      date: currentDate,
-    };
-    const movementReceiver = {
-      amount: amount,
-      date: currentDate,
-    };
-    // Realizar la transferencia
-    transferCurrentAccount.movements.push(movementSender); // Mov. de la cuenta del remitente
-    transferAccount.movements.push(movementReceiver); // Mov. de la cuenta del receptor
-    // Actualizar la interfaz de usuario
-    updateUI(transferCurrentAccount);
+
+  try {
+    // Validaciones básicas
+    if (amount <= 0 || !transferUsername) {
+      throw new Error("Cantidad inválida o usuario no especificado");
+    }
+
+    // Enviar solicitud de transferencia al servidor
+    const response = await fetch("http://localhost:5000/transacciones", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        usernameEmisor: currentAccount.username,
+        usernameReceptor: transferUsername,
+        pin: currentAccount.pin,
+        cantidad: amount,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Error al realizar la transferencia");
+    }
+
+    // Si la transferencia fue exitosa, recargar los datos
+    await cargarDatos(currentAccount.username, currentAccount.pin);
+    
     // Limpiar los campos del formulario
     inputTransferAmount.value = inputTransferTo.value = "";
-  }
-  // En caso de que no se verifiquen las condiciones
-  else {
-    // Mostramos una alerta por pantalla
-    alert("No se pudo realizar la transferencia. Verifica los datos.");
+  } catch (error) {
+    alert(error.message);
   }
 });
 
