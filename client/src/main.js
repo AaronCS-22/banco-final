@@ -466,21 +466,39 @@ btnClose.addEventListener("click", async function (e) {
 
 // ----------------------------------------------- sort -----------------------------------------------
 
-btnSort.addEventListener("click", function () {
-  // Cambia el estado de ordenación
-  isSortedAsc = !isSortedAsc;
-  if (currentAccount) {
-    // Crea una copia ordenada de los movimientos
-    const sortedMovements = [...currentAccount.movements];
-    // Ordena los movimientos por fecha
-    if (isSortedAsc) {
-      // Orden ascendente (de más antiguo a más reciente)
-      sortedMovements.sort((a, b) => new Date(a.date) - new Date(b.date));
-    } else {
-      // Orden descendente (de más reciente a más antiguo)
-      sortedMovements.sort((a, b) => new Date(b.date) - new Date(a.date));
-    }
-    // Usa la función displayMovements con los movimientos ordenados
-    displayMovements(sortedMovements);
+btnSort.addEventListener("click", async function () {
+  if (!currentAccount) return;
+
+  try {
+    // Obtener movimientos actualizados del servidor
+    const response = await fetch("http://localhost:5000/movimientos", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: currentAccount.username,
+        pin: currentAccount.pin,
+      }),
+    });
+
+    if (!response.ok) throw new Error("Error al obtener los movimientos");
+
+    const data = await response.json();
+    let movementsArray = Object.values(data.movements);
+
+    // Cambia el estado de ordenación
+    isSortedAsc = !isSortedAsc;
+
+    // Ordenar los movimientos según la fecha
+    movementsArray.sort((a, b) =>
+      isSortedAsc ? new Date(a.date) - new Date(b.date) : new Date(b.date) - new Date(a.date)
+    );
+
+    // Mostrar los movimientos ordenados en la UI
+    displayMovements(movementsArray);
+  } catch (error) {
+    alert(error.message);
   }
 });
+
