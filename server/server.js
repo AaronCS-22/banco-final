@@ -18,6 +18,7 @@ app.get("/", (req, res) => {
 // Importación de ficheros
 app.use("/", require("./routes/cuentas"));
 app.use("/", require("./routes/login"));
+app.use("/", require("./routes/movimientos"));
 
 // ------------------------------------------ Inicialización ------------------------------------------
 app.listen(PORT, () => {

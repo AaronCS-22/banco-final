@@ -123,6 +123,7 @@ const inputClosePin = document.querySelector(".form__input--pin");
 // Variables
 let currentAccount;
 let isSortedAsc = true;
+let movements;
 
 // ----------------------------------------------- createUsernames -----------------------------------------------
 // Creamos el campo username para todas las cuentas de usuarios
@@ -143,22 +144,22 @@ cargarCuentas(); // Ejecutamos la función para obtener las cuentas
 // ----------------------------------------------- login -----------------------------------------------
 btnLogin.addEventListener("click", async function (e) {
   e.preventDefault();
-  
+
   // Obtenemos los valores del usuario y el PIN desde los campos del formulario
   const inputUsername = inputLoginUsername.value;
   const inputPin = Number(inputLoginPin.value);
 
   try {
     // Enviar al servidor para verificar el usuario y el PIN
-    const response = await fetch("http://localhost:5000/login", { // Cambié la URL para que coincida con el endpoint '/api/login'
+    const response = await fetch("http://localhost:5000/login", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         username: inputUsername,
-        pin: inputPin
-      })
+        pin: inputPin,
+      }),
     });
 
     // Si la respuesta no es ok, lanzamos un error
@@ -177,57 +178,79 @@ btnLogin.addEventListener("click", async function (e) {
     // Limpiar el formulario de login
     inputLoginUsername.value = inputLoginPin.value = "";
 
-    // Actualizar UI con los datos de la cuenta
-    updateUI(accountData.account); // Actualiza la interfaz con la cuenta recibida
-
-    //Guardar el username y el pin del servidor en currentAccount
+    // Guardar el username y el pin del servidor en currentAccount
     currentAccount = {
       username: accountData.account.username,
       pin: accountData.account.pin,
-    }
+    };
 
-    console.log(currentAccount)
+    // Actualizamos la UI con los datos de la cuenta
+    updateUI(currentAccount);
 
+    console.log(currentAccount);
   } catch (error) {
     alert(error.message); // Si hay algún error, mostramos un mensaje
+    console.log(error);
   }
 });
 
-
 // ----------------------------------------------- updateUI -----------------------------------------------
-const updateUI = function ({ movements }) {
-  // Mostrar los movimientos de la cuenta
-  displayMovements(movements);
+const updateUI = function (account) {
+  // Mostrar los movimientos de la cuenta con username y pin
+  displayMovements(account.username, account.pin);
   // Mostrar el balance de la cuenta
-  displayBalance(movements);
-  // Mostrar el total de los movimientos de la cuenta
-  // Ingresos y gastos
-  displaySummary(movements);
+  //displayBalance(account.movements);
+  // Mostrar el resumen de la cuenta
+  //displaySummary(account.movements);
 };
 
-const displayMovements = function (movements) {
+const displayMovements = async function (username, pin) {
   // Vaciamos el HTML
   containerMovements.innerHTML = "";
-  // Recorremos el array de movimientos
-  movements.forEach((mov, i) => {
-    // Creamos el tipo de movimiento (depósito o retiro)
-    const type = mov.amount > 0 ? "deposit" : "withdrawal";
-    // Formateamos la fecha en formato DD/MM/YYYY
-    const date = new Date(mov.date);
-    const formattedDate = formatRelativeDate(date);
-    // Creamos el HTML
-    const html = `
-      <div class="movements__row">
-        <div class="movements__type movements__type--${type}">${i + 1} ${
-          type === "withdrawal" ? "withdrawal" : "deposit"
-        }</div>
-        <div class="movements__date">${formattedDate}</div>
-        <div class="movements__value">${mov.amount.toFixed(2)}€</div>
-      </div>
-    `;
-    // Insertamos el HTML en el DOM
-    containerMovements.insertAdjacentHTML("afterbegin", html);
-  });
+
+  try {
+    // Enviar la solicitud al backend con username y pin
+    const response = await fetch("http://localhost:5000/movimientos", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: username,
+        pin: pin,
+      }),
+    });
+
+    if (!response.ok) throw new Error("Error al obtener los movimientos");
+
+    const accountData = await response.json(); // La respuesta ahora es un objeto con los movimientos
+
+    // Guardamos los datos de movimientos en una variable
+    movements = accountData.movements;
+
+    // Recorremos el array de movimientos de la API
+    movements.forEach((mov, i) => {
+      // Creamos el tipo de movimiento (depósito o retiro)
+      const type = mov.amount > 0 ? "deposit" : "withdrawal";
+      // Formateamos la fecha en formato DD/MM/YYYY
+      const date = new Date(mov.date);
+      const formattedDate = formatRelativeDate(date);
+      // Creamos el HTML
+      const html = `
+        <div class="movements__row">
+          <div class="movements__type movements__type--${type}">${i + 1} ${
+            type === "withdrawal" ? "withdrawal" : "deposit"
+          }</div>
+          <div class="movements__date">${formattedDate}</div>
+          <div class="movements__value">${mov.amount.toFixed(2)}€</div>
+        </div>
+      `;
+      // Insertamos el HTML en el DOM
+      containerMovements.insertAdjacentHTML("afterbegin", html);
+    });
+  } catch (error) {
+    console.error("Error:", error.message);
+  }
 };
 
 const displayBalance = function (movements) {
