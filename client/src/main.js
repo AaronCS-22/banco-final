@@ -185,7 +185,7 @@ btnLogin.addEventListener("click", async function (e) {
     };
 
     // Actualizamos la UI con los datos de la cuenta
-    updateUI(currentAccount);
+    cargarDatos(currentAccount.username, currentAccount.pin);
 
     console.log(currentAccount);
   } catch (error) {
@@ -194,89 +194,101 @@ btnLogin.addEventListener("click", async function (e) {
   }
 });
 
+async function cargarDatos(username, pin) {
+  const response = await fetch("http://localhost:5000/movimientos", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      username: username,
+      pin: pin,
+    }),
+  });
+
+  if (!response.ok) throw new Error("Error al obtener los movimientos");
+
+  const data = await response.json();
+
+  const movementsArray = Object.values(data.movements);
+
+  updateUI(movementsArray);
+}
+
 // ----------------------------------------------- updateUI -----------------------------------------------
-const updateUI = function (account) {
+const updateUI = function (movements) {
   // Mostrar los movimientos de la cuenta con username y pin
-  displayMovements(account.username, account.pin);
+  displayMovements(movements);
   // Mostrar el balance de la cuenta
-  //displayBalance(account.movements);
+  displayBalance(movements);
   // Mostrar el resumen de la cuenta
-  //displaySummary(account.movements);
+  displaySummary(movements);
 };
 
-const displayMovements = async function (username, pin) {
+const displayMovements = function (movements) {
   // Vaciamos el HTML
   containerMovements.innerHTML = "";
 
-  try {
-    // Enviar la solicitud al backend con username y pin
-    const response = await fetch("http://localhost:5000/movimientos", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        username: username,
-        pin: pin,
-      }),
-    });
-
-    if (!response.ok) throw new Error("Error al obtener los movimientos");
-
-    const accountData = await response.json(); // La respuesta ahora es un objeto con los movimientos
-
-    // Guardamos los datos de movimientos en una variable
-    movements = accountData.movements;
-
-    // Recorremos el array de movimientos de la API
-    movements.forEach((mov, i) => {
-      // Creamos el tipo de movimiento (depósito o retiro)
-      const type = mov.amount > 0 ? "deposit" : "withdrawal";
-      // Formateamos la fecha en formato DD/MM/YYYY
-      const date = new Date(mov.date);
-      const formattedDate = formatRelativeDate(date);
-      // Creamos el HTML
-      const html = `
-        <div class="movements__row">
-          <div class="movements__type movements__type--${type}">${i + 1} ${
-            type === "withdrawal" ? "withdrawal" : "deposit"
-          }</div>
-          <div class="movements__date">${formattedDate}</div>
-          <div class="movements__value">${mov.amount.toFixed(2)}€</div>
-        </div>
-      `;
-      // Insertamos el HTML en el DOM
-      containerMovements.insertAdjacentHTML("afterbegin", html);
-    });
-  } catch (error) {
-    console.error("Error:", error.message);
-  }
+  // Recorremos el array de movimientos de la API
+  movements.forEach((mov, i) => {
+    // Creamos el tipo de movimiento (depósito o retiro)
+    const type = mov.amount > 0 ? "deposit" : "withdrawal";
+    // Formateamos la fecha en formato DD/MM/YYYY
+    const date = new Date(mov.date);
+    const formattedDate = formatRelativeDate(date);
+    // Creamos el HTML
+    const html = `
+      <div class="movements__row">
+        <div class="movements__type movements__type--${type}">${i + 1} ${
+          type === "withdrawal" ? "withdrawal" : "deposit"
+        }</div>
+        <div class="movements__date">${formattedDate}</div>
+        <div class="movements__value">${mov.amount.toFixed(2)}€</div>
+      </div>
+    `;
+    // Insertamos el HTML en el DOM
+    containerMovements.insertAdjacentHTML("afterbegin", html);
+  });
 };
 
 const displayBalance = function (movements) {
-  // Calculamos suma de ingresos y retiradas de efectivo
-  const balance = movements.reduce((total, mov) => total + mov.amount, 0);
-  // Actualizamos el DOM:
+  let balance = 0; // Inicializamos el balance en 0
+
+  // Recorremos los valores de movements y sumamos los montos
+  for (const key in movements) {
+    if (movements.hasOwnProperty(key)) {
+      balance += movements[key].amount;
+    }
+  }
+
+  // Actualizamos el DOM con el balance calculado
   labelBalance.textContent = `${balance.toFixed(2)} €`;
 };
 
+
 const displaySummary = function (movements) {
-  // Calculamos los ingresos
-  const incomes = movements
-    .filter((mov) => mov.amount > 0)
-    .reduce((sum, mov) => sum + mov.amount, 0);
-  labelSumIn.textContent = `${incomes.toFixed(2)}€`;
-  // Calculamos los gastos
-  const outflows = movements
-    .filter((mov) => mov.amount < 0)
-    .reduce((sum, mov) => sum + Math.abs(mov.amount), 0);
-  labelSumOut.textContent = `${outflows.toFixed(2)}€`;
-  // Calculamos los intereses (suponiendo que se apliquen solo a depósitos y con una tasa media del 1.5%)
+  let incomes = 0;
+  let outflows = 0;
+  let interest = 0;
   const interestRate = 1.5 / 100;
-  const interest = movements
-    .filter((mov) => mov.amount > 0)
-    .map((dep) => dep.amount * interestRate)
-    .reduce((sum, int) => sum + int, 0);
+
+  // Recorremos el objeto movements
+  for (const key in movements) {
+    if (movements.hasOwnProperty(key)) {
+      const amount = movements[key].amount;
+
+      if (amount > 0) {
+        incomes += amount;
+        interest += amount * interestRate; // Calculamos el interés solo para depósitos
+      } else {
+        outflows += Math.abs(amount);
+      }
+    }
+  }
+
+  // Actualizamos los valores en la UI
+  labelSumIn.textContent = `${incomes.toFixed(2)}€`;
+  labelSumOut.textContent = `${outflows.toFixed(2)}€`;
   labelSumInterest.textContent = `${interest.toFixed(2)}€`;
 };
 
