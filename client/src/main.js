@@ -365,7 +365,8 @@ btnTransfer.addEventListener("click", async function (e) {
     await cargarDatos(currentAccount.username, currentAccount.pin);
     
     // Limpiar los campos del formulario
-    inputTransferAmount.value = inputTransferTo.value = "";
+    inputTransferTo.value = inputTransferTo.value = "";
+    inputTransferAmount.value = inputTransferAmount.value = "";
   } catch (error) {
     alert(error.message);
   }
@@ -406,7 +407,8 @@ btnLoan.addEventListener("click", async function (e) {
     await cargarDatos(currentAccount.username, currentAccount.pin);
     
     // Limpiar los campos del formulario
-    inputTransferAmount.value = inputTransferTo.value = "";
+    inputLoanAmount.value = inputLoanAmount.value = "";
+    
   } catch (error) {
     alert(error.message);
   }
