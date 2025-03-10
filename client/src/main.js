@@ -373,34 +373,42 @@ btnTransfer.addEventListener("click", async function (e) {
 
 // ----------------------------------------------- loan -----------------------------------------------
 
-btnLoan.addEventListener("click", function (e) {
+btnLoan.addEventListener("click", async function (e) {
   e.preventDefault();
-  // Obtenemos el monto del préstamo
-  const loanAmount = Math.floor(inputLoanAmount.value);
-  // Comprobamos si el monto es positivo y no supera el 200% del balance actual
-  const currentBalance = currentAccount.movements.reduce(
-    (acc, mov) => acc + mov.amount,
-    0
-  );
-  const maxLoanAmount = currentBalance * 2;
-  if (loanAmount > 0 && loanAmount <= maxLoanAmount) {
-    // Si el préstamo es válido, se agrega el préstamo como un movimiento positivo
-    const currentDate = new Date();
-    const loanMovement = {
-      amount: loanAmount,
-      date: currentDate,
-    };
-    // Agregar el préstamo a la cuenta del usuario
-    currentAccount.movements.push(loanMovement);
-    // Actualizamos la interfaz de usuario
-    updateUI(currentAccount);
-    // Limpiamos el campo de entrada del préstamo
-    inputLoanAmount.value = "";
-  } else {
-    // Si el préstamo no es válido, mostramos un mensaje de error
-    alert(
-      `El préstamo no puede superar el 200% del saldo actual o su cuenta no tiene fondo.`
-    );
+  const amount = Number(inputLoanAmount.value);
+  const transferUsername = inputLoanAmount.value.trim();
+
+  try {
+    // Validaciones básicas
+    if (amount <= 0 || !transferUsername) {
+      throw new Error("Cantidad inválida o usuario no especificado");
+    }
+
+    // Enviar solicitud de transferencia al servidor
+    const response = await fetch("http://localhost:5000/prestamos", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: currentAccount.username,
+        pin: currentAccount.pin,
+        cantidad: amount,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Error al realizar la transferencia");
+    }
+
+    // Si la transferencia fue exitosa, recargar los datos
+    await cargarDatos(currentAccount.username, currentAccount.pin);
+    
+    // Limpiar los campos del formulario
+    inputTransferAmount.value = inputTransferTo.value = "";
+  } catch (error) {
+    alert(error.message);
   }
 });
 
