@@ -295,3 +295,24 @@ h2 {
 .timer {
   font-weight: 600;
 }
+
+/* Estilos para móviles */
+@media screen and (max-width: 775px) {
+  .welcome {
+    display: none;
+  }
+
+  .app {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .balance,
+  .summary {
+    order: -2;
+  }
+
+  .movements {
+    order: -1;
+  }
+}
