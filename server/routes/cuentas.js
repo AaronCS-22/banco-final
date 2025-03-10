@@ -1,5 +1,5 @@
-const express = require('express');
-const { faker } = require('@faker-js/faker');
+const express = require("express");
+const { faker } = require("@faker-js/faker");
 const router = express.Router();
 
 // ------------------------------------------ Variables globales ------------------------------------------
@@ -52,8 +52,23 @@ function createUsernames(accounts) {
 createUsernames(cuentasGeneradas);
 
 // ------------------------------------------ Ruta GET ------------------------------------------
-router.get('/cuentas', (req, res) => {
+router.get("/cuentas", (req, res) => {
   res.json(cuentasGeneradas);
 });
 
+// ------------------------------------------ Funciones internas ------------------------------------------
+// Función para encontrar una cuenta por su nombre de usuario
+function findAccountByUsername(username) {
+  return cuentasGeneradas.find((account) => account.username === username);
+}
+
+// Función para verificar el PIN
+function verifyPin(pin, accountPin) {
+  return pin === accountPin;
+}
+
+// ------------------------------------------ Exportaciones ------------------------------------------
 module.exports = router;
+module.exports.findAccountByUsername = findAccountByUsername;
+module.exports.verifyPin = verifyPin;
+module.exports.cuentasGeneradas = cuentasGeneradas;

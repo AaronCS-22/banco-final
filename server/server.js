@@ -15,8 +15,9 @@ app.get("/", (req, res) => {
   res.send("¡La API está funcionando!");
 });
 
-// Importación de /routes/cuentas
-app.use('/', require('./routes/cuentas'));
+// Importación de ficheros
+app.use("/", require("./routes/cuentas"));
+app.use("/", require("./routes/login"));
 
 // ------------------------------------------ Inicialización ------------------------------------------
 app.listen(PORT, () => {

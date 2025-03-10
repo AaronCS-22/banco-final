@@ -131,7 +131,6 @@ const cargarCuentas = async () => {
   try {
     const response = await fetch("http://localhost:5000/cuentas"); // Petición al backend
     if (!response.ok) throw new Error("Error al cargar las cuentas");
-    
     const cuentas = await response.json(); // Convertimos la respuesta a JSON
     console.log(cuentas); // Mostramos las cuentas en consola
   } catch (error) {
@@ -139,33 +138,61 @@ const cargarCuentas = async () => {
   }
 };
 
+cargarCuentas(); // Ejecutamos la función para obtener las cuentas
+
 // ----------------------------------------------- login -----------------------------------------------
-btnLogin.addEventListener("click", function (e) {
-  // Evitamos que el formulario se envíe
+btnLogin.addEventListener("click", async function (e) {
   e.preventDefault();
-  // Recogemos el username y el pin, y se compara con los datos de las cuentas
+  
+  // Obtenemos los valores del usuario y el PIN desde los campos del formulario
   const inputUsername = inputLoginUsername.value;
   const inputPin = Number(inputLoginPin.value);
-  const account = cuentasGeneradas.find(
-    (account) => account.username === inputUsername
-  );
-  if (account && account.pin === inputPin) {
-    // Si el usuario y el pin son correctos, se realiza un mensaje de bienvenida y que se vea la aplicación
+
+  try {
+    // Enviar al servidor para verificar el usuario y el PIN
+    const response = await fetch("http://localhost:5000/login", { // Cambié la URL para que coincida con el endpoint '/api/login'
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        username: inputUsername,
+        pin: inputPin
+      })
+    });
+
+    // Si la respuesta no es ok, lanzamos un error
+    if (!response.ok) {
+      throw new Error("Credenciales incorrectas");
+    }
+
+    // Recibimos los datos de la cuenta si la autenticación es exitosa
+    const accountData = await response.json(); // La respuesta ahora es un objeto con la cuenta
+
+    // Si la cuenta es válida, mostramos la UI
     containerApp.style.opacity = 1;
-    labelWelcome.textContent = `Welcome back, ${account.owner.split(" ")[0]}`;
-    // Se limpia el formulario
-    inputLoginUsername.value = inputLoginPin.value = "";
-    // Se cargan los datos (movimientos de la cuenta)
-    updateUI(account);
-    // Guardamos los datos de la cuenta para conocer quién está conectado
-    currentAccount = account;
-    // Actualizamos la fecha actual
+    labelWelcome.textContent = `Welcome back, ${accountData.account.owner.split(" ")[0]}`;
     labelDate.textContent = new Date().toLocaleDateString("es-ES");
-  } else {
-    // Mostramos una alerta con el login incorrecto
-    alert("Login incorrecto.");
+
+    // Limpiar el formulario de login
+    inputLoginUsername.value = inputLoginPin.value = "";
+
+    // Actualizar UI con los datos de la cuenta
+    updateUI(accountData.account); // Actualiza la interfaz con la cuenta recibida
+
+    //Guardar el username y el pin del servidor en currentAccount
+    currentAccount = {
+      username: accountData.account.username,
+      pin: accountData.account.pin,
+    }
+
+    console.log(currentAccount)
+
+  } catch (error) {
+    alert(error.message); // Si hay algún error, mostramos un mensaje
   }
 });
+
 
 // ----------------------------------------------- updateUI -----------------------------------------------
 const updateUI = function ({ movements }) {
