@@ -1,5 +1,8 @@
 import "./style.css";
 
+// PUERTO
+let PORT = 5000;
+
 document.querySelector("#app").innerHTML = `
     <nav>
       <p class="welcome">Log in to get started</p>
@@ -151,7 +154,7 @@ btnLogin.addEventListener("click", async function (e) {
 
   try {
     // Enviar al servidor para verificar el usuario y el PIN
-    const response = await fetch("http://localhost:5000/login", {
+    const response = await fetch(`http://localhost:${PORT}/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -195,7 +198,7 @@ btnLogin.addEventListener("click", async function (e) {
 });
 
 async function cargarDatos(username, pin) {
-  const response = await fetch("http://localhost:5000/movimientos", {
+  const response = await fetch(`http://localhost:${PORT}/movimientos`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -343,7 +346,7 @@ btnTransfer.addEventListener("click", async function (e) {
     }
 
     // Enviar solicitud de transferencia al servidor
-    const response = await fetch("http://localhost:5000/transacciones", {
+    const response = await fetch(`http://localhost:${PORT}/transacciones`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -386,7 +389,7 @@ btnLoan.addEventListener("click", async function (e) {
     }
 
     // Enviar solicitud de transferencia al servidor
-    const response = await fetch("http://localhost:5000/prestamos", {
+    const response = await fetch(`http://localhost:${PORT}/prestamos`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -430,7 +433,7 @@ btnClose.addEventListener("click", async function (e) {
     }
     
     // Enviar solicitud al servidor para cerrar la cuenta
-    const response = await fetch("http://localhost:5000/cerrar", {
+    const response = await fetch(`http://localhost:${PORT}/cerrar`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -471,7 +474,7 @@ btnSort.addEventListener("click", async function () {
 
   try {
     // Obtener movimientos actualizados del servidor
-    const response = await fetch("http://localhost:5000/movimientos", {
+    const response = await fetch(`http://localhost:${PORT}/movimientos`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
