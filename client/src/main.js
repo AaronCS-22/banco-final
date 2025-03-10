@@ -416,36 +416,51 @@ btnLoan.addEventListener("click", async function (e) {
 
 // ----------------------------------------------- close -----------------------------------------------
 
-btnClose.addEventListener("click", function (e) {
+btnClose.addEventListener("click", async function (e) {
   e.preventDefault();
+  
   // Obtenemos los datos del formulario de cierre de cuenta
   const closeUsername = inputCloseUsername.value;
   const closePin = Number(inputClosePin.value);
-  // Verificamos si el nombre de usuario y el PIN coinciden con los datos de la cuenta actual
-  if (
-    currentAccount.username === closeUsername &&
-    currentAccount.pin === closePin
-  ) {
-    // Eliminamos la cuenta de la lista de cuentas disponibles
-    const accountIndex = cuentasGeneradas.findIndex(
-      (account) => account.username === currentAccount.username
-    );
-    if (accountIndex !== -1) {
-      cuentasGeneradas.splice(accountIndex, 1); // Elimina la cuenta de cuentasGeneradas
+  
+  try {
+    // Verificamos que se está intentando cerrar la cuenta actualmente logueada
+    if (currentAccount.username !== closeUsername) {
+      throw new Error("Solo puedes cerrar tu propia cuenta");
     }
-    // Confirmamos el cierre de cuenta
+    
+    // Enviar solicitud al servidor para cerrar la cuenta
+    const response = await fetch("http://localhost:5000/cerrar", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: closeUsername,
+        pin: closePin,
+      }),
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Error al cerrar la cuenta");
+    }
+    
+    // Si la cuenta se cerró con éxito
     alert("Tu cuenta ha sido cerrada con éxito.");
+    
     // Ocultamos la aplicación y mostramos el formulario de login
     containerApp.style.opacity = 0;
     labelWelcome.textContent = "Log in to get started";
-    // Limpiamos los campos de entrada de login y close
+    
+    // Limpiamos los campos de entrada
     inputLoginUsername.value = inputLoginPin.value = "";
     inputCloseUsername.value = inputClosePin.value = "";
+    
     // Reseteamos la variable de cuenta actual
     currentAccount = null;
-  } else {
-    // Si el nombre de usuario o PIN son incorrectos, mostramos un mensaje de error
-    alert("Datos incorrectos. No se pudo cerrar la cuenta.");
+  } catch (error) {
+    alert(error.message);
   }
 });
 

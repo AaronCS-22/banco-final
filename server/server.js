@@ -21,6 +21,7 @@ app.use("/", require("./routes/login"));
 app.use("/", require("./routes/movimientos"));
 app.use("/", require("./routes/transacciones"));
 app.use("/", require("./routes/prestamos"));
+app.use("/", require("./routes/cerrar"));
 
 // ------------------------------------------ Inicialización ------------------------------------------
 app.listen(PORT, () => {
