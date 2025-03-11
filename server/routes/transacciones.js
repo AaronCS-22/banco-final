@@ -7,6 +7,13 @@ router.post("/transacciones", (req, res) => {
   try {
     const { usernameEmisor, usernameReceptor, pin, cantidad } = req.body;
 
+    // Comprobar si usernameEmisor y usernameReceptor es el mismo
+    if (usernameEmisor === usernameReceptor) {
+      return res
+        .status(400)
+        .json({ error: "No puedes enviarte dinero a ti mismo" });
+    }
+
     // Buscar la cuenta del emisor
     const accountEmisor = cuentasModule.findAccountByUsername(usernameEmisor);
     if (!accountEmisor) {
