@@ -16,19 +16,18 @@ npm install
 ```shell
 npm run dev
 ```
-4. Obtenemos el puerto donde Vite ha cargado el cliente. Normalmente se encuentra en el puerto 5173.
 
-5. A través de otra terminal, accedemos a la carpeta ```server``` y, como se ha realizado en el paso 2, instalamos los paquetes necesarios:
+4. A través de otra terminal, accedemos a la carpeta ```server``` y, como se ha realizado en el paso 2, instalamos los paquetes necesarios:
 ```shell
 npm install
 ```
-6. Para arrancar el servidor, debemos poner el siguiente comando junto con el número de puerto donde la aplicación cliente se encuentra en funcionamiento (reemplaza 5173 por el puerto correspondiente):
+5. Para arrancar el servidor, debemos poner el siguiente comando junto con el número de puerto donde la aplicación cliente se encuentra en funcionamiento:
 ```shell
-node server.js 5173
+node server.js
 ```
-7. Si aparece un mensaje por consola que pone que el servidor se encuentra funcionando en el puerto 5000, se habrá realizado con éxito el despliegue de la API.
+6. Si aparece un mensaje por consola que pone que el servidor se encuentra funcionando en el puerto 5000, se habrá realizado con éxito el despliegue de la API.
 
-8. Entramos a ```http://localhost:5173``` (reemplaza 5173 por el puerto correspondiente al cliente) y, en caso de que al acceder a la consola aparezcan varios arrays con las cuentas de usuario, la conexión habrá funcionado.
+7. Entramos a ```http://localhost:5173``` y, en caso de que al acceder a la consola aparezcan varios arrays con las cuentas de usuario, la conexión habrá funcionado.
 
 ## ✅ Requisitos cumplidos
 1. **Visualización de movimientos con fechas:** La aplicación permite ver un historial de transacciones realizadas mostrando la fecha y la cantidad en cada movimiento.
@@ -44,7 +43,7 @@ node server.js 5173
 6. **Interfaz intuitiva y adaptable:** La aplicación está diseñada para ser intuitiva y funcional ordenadores como en dispositivos móviles, brindando una experiencia amigable y fácil de usar.
 
 ## 🗒️ Notas
-- **Puerto del servidor:** El servidor debe ejecutarse siempre en el puerto 5000 para que el cliente pueda realizar las solicitudes correctamente. Si el servidor se ejecuta en otro puerto, será necesario cambiar la variable ```PORT``` manualmente en el archivo ```client/src/main.js``` (primeras líneas del código) para que apunte al puerto correcto.
+- **Puerto del servidor:** El servidor debe ejecutarse siempre en el puerto 5000 para que el cliente pueda realizar las solicitudes correctamente. Si el servidor se ejecuta en otro puerto (cambiando su parámetro en la variable ```PORT``` en el archvio ```server/server.js```), será necesario cambiar la variable ```PORT``` manualmente en el archivo ```client/src/main.js``` (primeras líneas del código) para que apunte al puerto correcto.
 
 - **Persistencia de datos:** Todas las acciones del usuario se gestionan y almacenan en el servidor a través de ```GET``` y ```USE```. Los datos permanecen intactos en el servidor, incluso si se recarga la página en el cliente. Recargar la página solo reinicia la visualización de la interfaz, pero no afecta a los datos guardados.
 
